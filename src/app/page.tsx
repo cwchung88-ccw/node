@@ -1,5 +1,6 @@
 import Link from "next/link";
 import localData from "../../public/data/local-info.json";
+import AdBanner from "../components/AdBanner";
 
 interface InfoItem {
   id: string;
@@ -38,8 +39,92 @@ export default function Home() {
     return `${formatDate(start)} ~ ${formatDate(end)}`;
   };
 
+  const event1Schema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": event1.title,
+    "startDate": event1.startDate,
+    "endDate": event1.endDate,
+    "location": {
+      "@type": "Place",
+      "name": event1.location
+    },
+    "description": event1.summary
+  };
+
+  const event2Schema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": event2.title,
+    "startDate": event2.startDate,
+    "endDate": event2.endDate,
+    "location": {
+      "@type": "Place",
+      "name": event2.location
+    },
+    "description": event2.summary
+  };
+
+  const event3Schema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": event3.title,
+    "startDate": event3.startDate,
+    "endDate": event3.endDate,
+    "location": {
+      "@type": "Place",
+      "name": event3.location
+    },
+    "description": event3.summary
+  };
+
+  const benefit1Schema = {
+    "@context": "https://schema.org",
+    "@type": "GovernmentService",
+    "name": benefit1.title,
+    "description": benefit1.summary,
+    "provider": {
+      "@type": "GovernmentOrganization",
+      "name": benefit1.location
+    }
+  };
+
+  const benefit2Schema = {
+    "@context": "https://schema.org",
+    "@type": "GovernmentService",
+    "name": benefit2.title,
+    "description": benefit2.summary,
+    "provider": {
+      "@type": "GovernmentOrganization",
+      "name": benefit2.location
+    }
+  };
+
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID;
+  const hasAdsense = adsenseId && adsenseId !== "나중에_입력";
+
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#A5C3F9]/20 via-[#E9F0FD] to-[#D5E1F9]/30 text-neutral-800 font-sans selection:bg-blue-100 pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(event1Schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(event2Schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(event3Schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(benefit1Schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(benefit2Schema) }}
+      />
       
       {/* 1. 최상단 검색창 및 날씨 영역 */}
       <div className="max-w-6xl mx-auto px-4 pt-10 pb-6 flex flex-col items-center gap-6 relative">
@@ -103,6 +188,7 @@ export default function Home() {
                 <span className="px-3.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 rounded-full cursor-pointer shrink-0 transition-colors duration-150">날씨</span>
                 <span className="px-3.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 rounded-full cursor-pointer shrink-0 transition-colors duration-150">시정소식</span>
                 <Link href="/blog" className="px-3.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 rounded-full cursor-pointer shrink-0 transition-colors duration-150">블로그</Link>
+                <Link href="/about" className="px-3.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 rounded-full cursor-pointer shrink-0 transition-colors duration-150">소개</Link>
               </nav>
             </div>
 
@@ -199,50 +285,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* [우측 상단: 카드 2] - 비디오형 뉴스 카드 (1열 차지) */}
-            <Link href="/blog" className="group bg-[#F8FAFC] border border-neutral-200/50 rounded-2xl p-5 flex flex-col justify-between">
-              <div className="space-y-4">
-                {/* 썸네일 이미지 및 비디오 재생 아이콘 오버레이 */}
-                <div className="relative overflow-hidden rounded-xl aspect-[16/10] bg-neutral-200 border border-neutral-200/40 flex items-center justify-center">
-                  <img 
-                    src="/images/youth_housing_support.png" 
-                    alt={benefit1.title}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
-                  />
-                  {/* 중앙의 재생 버튼 */}
-                  <div className="absolute w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 shadow-md group-hover:scale-110 transition-transform duration-200">
-                    <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] bg-blue-100 text-blue-600 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">VIDEO</span>
-                    <span className="text-xs font-bold text-neutral-600">성남TV • 12시간 전</span>
-                  </div>
-                  <h3 className="text-base md:text-lg font-extrabold text-neutral-900 group-hover:text-blue-600 transition-colors leading-snug">
-                    [영상 가이드] 신청 자격 총정리! 월 최대 20만원 받아가는 '청년 월세 지원금' 혜택 안내
-                  </h3>
-                </div>
-              </div>
-
-              {/* 피드 아래 소셜 버튼 */}
-              <div className="mt-5 pt-3 border-t border-neutral-200/60 flex items-center gap-4 text-neutral-400 text-xs font-semibold">
-                <span className="flex items-center gap-1.5 hover:text-neutral-600">
-                  👍 152
-                </span>
-                <span className="flex items-center gap-1.5 hover:text-neutral-600">
-                  👎 3
-                </span>
-                <span className="flex items-center gap-1.5 hover:text-neutral-600">
-                  💬 14
-                </span>
-              </div>
-            </Link>
-
-            {/* [좌측 하단: 카드 3] - 비디오형 뉴스 카드 (1열 차지) */}
+            {/* [우측 상단: 카드 3] - 비디오형 뉴스 카드 (1열 차지) */}
             <Link href="/blog" className="group bg-[#F8FAFC] border border-neutral-200/50 rounded-2xl p-5 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="relative overflow-hidden rounded-xl aspect-[16/10] bg-neutral-200 border border-neutral-200/40 flex items-center justify-center">
@@ -303,8 +346,8 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* [우측 하단: 카드 5] - 날씨 카드 (1열 차지) */}
-            <div className="bg-gradient-to-b from-[#1C539A] to-[#123E75] text-white border border-[#123E75]/30 rounded-2xl p-5 flex flex-col justify-between shadow-md">
+            {/* [우측 하단: 카드 5] - 날씨 카드 (2열 차지) */}
+            <div className="lg:col-span-2 bg-gradient-to-b from-[#1C539A] to-[#123E75] text-white border border-[#123E75]/30 rounded-2xl p-5 flex flex-col justify-between shadow-md">
               <div className="space-y-4">
                 {/* 헤더 날씨 정보 */}
                 <div className="flex items-start justify-between">
@@ -361,6 +404,86 @@ export default function Home() {
               </div>
             </div>
 
+            {/* AdSense Banner */}
+            {hasAdsense && (
+              <div className="lg:col-span-3">
+                <AdBanner />
+              </div>
+            )}
+
+            {/* [우측 상단: 카드 2] - 비디오형 뉴스 카드 (1열 차지) */}
+            <Link href="/blog" className="group bg-[#F8FAFC] border border-neutral-200/50 rounded-2xl p-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                {/* 썸네일 이미지 및 비디오 재생 아이콘 오버레이 */}
+                <div className="relative overflow-hidden rounded-xl aspect-[16/10] bg-neutral-200 border border-neutral-200/40 flex items-center justify-center">
+                  <img 
+                    src="/images/youth_housing_support.png" 
+                    alt={benefit1.title}
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                  />
+                  {/* 중앙의 재생 버튼 */}
+                  <div className="absolute w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 shadow-md group-hover:scale-110 transition-transform duration-200">
+                    <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] bg-blue-100 text-blue-600 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">VIDEO</span>
+                    <span className="text-xs font-bold text-neutral-600">성남TV • 12시간 전</span>
+                  </div>
+                  <h3 className="text-base md:text-lg font-extrabold text-neutral-900 group-hover:text-blue-600 transition-colors leading-snug">
+                    [영상 가이드] 신청 자격 총정리! 월 최대 20만원 받아가는 '청년 월세 지원금' 혜택 안내
+                  </h3>
+                </div>
+              </div>
+
+              {/* 피드 아래 소셜 버튼 */}
+              <div className="mt-5 pt-3 border-t border-neutral-200/60 flex items-center gap-4 text-neutral-400 text-xs font-semibold">
+                <span className="flex items-center gap-1.5 hover:text-neutral-600">
+                  👍 152
+                </span>
+                <span className="flex items-center gap-1.5 hover:text-neutral-600">
+                  👎 3
+                </span>
+                <span className="flex items-center gap-1.5 hover:text-neutral-600">
+                  💬 14
+                </span>
+              </div>
+            </Link>
+
+            {/* [혜택 영역: 카드 6] - 가로형 혜택 카드 (2열 넓이 차지) */}
+            <Link href="/blog" className="lg:col-span-2 group bg-[#F8FAFC] border border-neutral-200/50 rounded-2xl p-5 flex flex-col md:flex-row gap-5 justify-between">
+              <div className="flex-1 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] bg-blue-100 text-blue-600 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">NEW</span>
+                    <span className="text-xs font-bold text-neutral-600">경기도 • {benefit2.location}</span>
+                  </div>
+                  <h3 className="text-lg md:text-xl font-extrabold text-neutral-900 group-hover:text-blue-600 transition-colors duration-150 leading-snug">
+                    {benefit2.title}: 첫째아 100만원, 둘째아 이상 150만원 출산축하금 신청 안내
+                  </h3>
+                  <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed font-medium">
+                    {benefit2.summary}
+                  </p>
+                </div>
+                <div className="mt-5 pt-3 border-t border-neutral-200/60 flex items-center justify-between text-neutral-400 text-xs font-semibold">
+                  <span className="truncate">대상: {benefit2.target}</span>
+                  <span className="text-blue-600 group-hover:translate-x-1 transition-transform font-bold flex items-center gap-0.5 shrink-0">
+                    자세히 보기 &rarr;
+                  </span>
+                </div>
+              </div>
+              <div className="hidden md:block w-48 h-40 relative overflow-hidden rounded-xl bg-neutral-200 border border-neutral-200/40 shrink-0">
+                <img 
+                  src="/images/youth_housing_support.png" 
+                  alt={benefit2.title}
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                />
+              </div>
+            </Link>
           </div>
 
         </div>

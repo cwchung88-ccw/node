@@ -1,7 +1,11 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import fs from "fs";
+import path from "path";
+import AdBanner from "../../../components/AdBanner";
 import { getPostData, getSortedPostsData } from "../../../lib/posts";
 
 export async function generateStaticParams() {
@@ -12,6 +16,30 @@ export async function generateStaticParams() {
   return posts.map((post) => ({
     slug: post.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPostData(slug);
+
+  if (!post) {
+    return {};
+  }
+
+  return {
+    title: `${post.title} | 성남시 생활 정보`,
+    description: post.summary,
+    openGraph: {
+      title: post.title,
+      description: post.summary,
+      type: "article",
+      url: `https://my-local-info.pages.dev/blog/${slug}`,
+    },
+  };
 }
 
 export default async function BlogPostDetail({
@@ -26,8 +54,77 @@ export default async function BlogPostDetail({
     notFound();
   }
 
+  // E-E-A-T 출처 정보 매칭
+  const localInfoPath = path.join(process.cwd(), "public/data/local-info.json");
+  let sourceLink = "";
+  if (fs.existsSync(localInfoPath)) {
+    try {
+      const localData = JSON.parse(fs.readFileSync(localInfoPath, "utf8"));
+      const items = localData.items || [];
+      const match = items.find((item: any) => {
+        const itemName = (item.name || item.title || "").trim();
+        const postTitle = (post.title || "").trim();
+        return itemName && (postTitle.includes(itemName) || itemName.includes(postTitle));
+      });
+      if (match) {
+        sourceLink = match.link || match.url || "";
+      }
+    } catch (err) {
+      console.error("Error reading/parsing local-info.json in blog detail:", err);
+    }
+  }
+
+  const blogPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "datePublished": post.date,
+    "description": post.summary,
+    "author": {
+      "@type": "Organization",
+      "name": "성남시 생활 정보"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "성남시 생활 정보"
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "홈",
+        "item": "https://my-local-info.pages.dev"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "블로그",
+        "item": "https://my-local-info.pages.dev/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title,
+        "item": `https://my-local-info.pages.dev/blog/${slug}`
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#A5C3F9]/20 via-[#E9F0FD] to-[#D5E1F9]/30 text-neutral-800 font-sans selection:bg-blue-100 pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* 1. 상단 미니 포털 헤더 */}
       <header className="bg-white/85 backdrop-blur-md border-b border-neutral-200/50 sticky top-0 z-50 py-3.5 px-4 shadow-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -40,12 +137,20 @@ export default async function BlogPostDetail({
             </span>
           </Link>
 
-          <Link
-            href="/blog"
-            className="inline-flex items-center text-xs font-bold text-neutral-500 hover:text-neutral-900 transition-colors duration-200 bg-neutral-100 hover:bg-neutral-200 px-3.5 py-2 rounded-full shadow-sm"
-          >
-            &larr; 블로그 목록으로 돌아가기
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/about"
+              className="inline-flex items-center text-xs font-bold text-neutral-500 hover:text-neutral-900 transition-colors duration-200 bg-neutral-100 hover:bg-neutral-200 px-3.5 py-2 rounded-full shadow-sm"
+            >
+              소개
+            </Link>
+            <Link
+              href="/blog"
+              className="inline-flex items-center text-xs font-bold text-neutral-500 hover:text-neutral-900 transition-colors duration-200 bg-neutral-100 hover:bg-neutral-200 px-3.5 py-2 rounded-full shadow-sm"
+            >
+              &larr; 블로그 목록으로 돌아가기
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -59,7 +164,11 @@ export default async function BlogPostDetail({
                 {post.category}
               </span>
               <span className="text-xs font-bold text-neutral-400">
-                {post.date}
+                작성일: {post.date}
+              </span>
+              <span className="text-xs font-bold text-neutral-400">•</span>
+              <span className="text-xs font-bold text-neutral-400">
+                최종 업데이트: {post.date}
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 leading-tight">
@@ -80,6 +189,32 @@ export default async function BlogPostDetail({
               {post.content}
             </ReactMarkdown>
           </div>
+
+          {/* E-E-A-T Info Panel */}
+          <div className="mt-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-200/60 space-y-4">
+            <p className="text-xs text-neutral-500 leading-relaxed flex items-start gap-1.5">
+              <span className="shrink-0 text-sm">ℹ️</span>
+              <span>
+                이 글은 공공데이터포털(data.go.kr)의 정보를 바탕으로 AI가 작성하였습니다. 정확한 내용은 원문 링크를 통해 확인해주세요.
+              </span>
+            </p>
+            {sourceLink && (
+              <div className="pt-3 border-t border-neutral-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-neutral-600 shrink-0">원문 출처:</span>
+                <a
+                  href={sourceLink === "#" ? "https://www.data.go.kr" : sourceLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-semibold break-all"
+                >
+                  {sourceLink === "#" ? "공공데이터포털 (data.go.kr)" : sourceLink}
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* AdSense Banner */}
+          <AdBanner />
 
           {/* 목록으로 돌아가기 버튼 */}
           <div className="pt-6 border-t border-neutral-100 flex justify-end">
